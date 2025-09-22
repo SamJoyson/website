@@ -10,13 +10,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-require("dotenv").config();
+const mongoURI = "mongodb+srv://samjoyson:samjoyson5806@smarthealthcluster.aof2ekj.mongodb.net/SmartHealthCare?retryWrites=true&w=majority";
 
-const mongoURI = process.env.MONGO_URI;
 mongoose.connect(mongoURI)
   .then(() => console.log("✅ Database connected"))
   .catch(err => console.error("❌ Database connection error:", err));
-
 
 app.post("/doctor/login", async (req, res) => {
   const { email, password } = req.body;
