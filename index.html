@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Patient Comfort & Care System</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>Smart Patient Comfort & Care System</h1>
+
+  <div id="mainSection">
+    <button onclick="showDoctorLogin()">Doctor Login</button>
+    <button onclick="showPatientLogin()">Patient Login</button>
+  </div>
+
+  <div id="doctorSection" style="display:none;">
+    <h2>Doctor Login</h2>
+    <form onsubmit="doctorLogin(event)">
+      <input type="email" id="doctorEmail" placeholder="Doctor Email" required><br>
+      <input type="password" id="doctorPassword" placeholder="Password" required><br>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <div id="patientSection" style="display:none;">
+    <h2>Patient Login</h2>
+    <form onsubmit="patientLogin(event)">
+      <input type="email" id="patientEmail" placeholder="Patient Email" required><br>
+      <input type="password" id="patientPassword" placeholder="Password" required><br>
+      <button type="submit">Login</button>
+    </form>
+    <div style="margin-top: 20px; text-align: center;">
+      <p style="margin-bottom: 10px;">Don't have an account?</p>
+      <button type="button" onclick="showPatientRegistration()" style="background: #27ae60;">Register New Patient</button>
+    </div>
+  </div>
+
+  <div id="patientRegistrationSection" style="display:none;">
+    <h2>Patient Registration</h2>
+    <form onsubmit="patientRegistration(event)">
+      <input type="text" id="regPatientName" placeholder="Full Name" required><br>
+      <input type="number" id="regPatientAge" placeholder="Age" min="1" max="150" required><br>
+      <input type="number" id="regPatientWeight" placeholder="Weight (kg)" min="1" max="500" step="0.1" required><br>
+      <input type="number" id="regPatientHeight" placeholder="Height (cm)" min="30" max="300" required><br>
+      <input type="email" id="regPatientEmail" placeholder="Email Address" required><br>
+      <input type="password" id="regPatientPassword" placeholder="Password" minlength="6" required><br>
+      <input type="password" id="regPatientConfirmPassword" placeholder="Confirm Password" minlength="6" required><br>
+      <button type="submit">Register</button>
+    </form>
+    <div style="margin-top: 15px; text-align: center;">
+      <button type="button" onclick="showPatientLogin()" style="background: #95a5a6;">Back to Login</button>
+    </div>
+  </div>
+
+  <div id="patientDashboard" style="display:none;">
+    <div id="sidebarToggle" class="sidebar-toggle">☰</div>
+    <div id="sidebar" class="sidebar">
+      <h3>Patient Profile</h3>
+      <div class="patient-details">
+        <p><strong>Patient ID:</strong> <span id="profilePatientID">-</span></p>
+        <p><strong>Name:</strong> <span id="profileName">-</span></p>
+        <p><strong>Age:</strong> <span id="profileAge">-</span></p>
+        <p><strong>Weight:</strong> <span id="profileWeight">-</span> kg</p>
+        <p><strong>Height:</strong> <span id="profileHeight">-</span> cm</p>
+        <p><strong>Email:</strong> <span id="profileEmail">-</span></p>
+      </div>
+      
+      <div style="padding: 15px; margin: 15px 0; background: #2c3e50; border-radius: 5px;">
+        <h4 style="color: white; margin-bottom: 10px;">Assign Doctor</h4>
+        <input type="text" id="sidebarDoctorID" placeholder="Doctor ID" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: none;">
+        <button onclick="assignDoctorFromSidebar()" style="width: 100%; padding: 8px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">Assign Doctor</button>
+        <p id="sidebarAssignmentMessage" style="color: white; margin-top: 10px; font-size: 12px;"></p>
+      </div>
+
+      <a href="#" class="logout-btn" onclick="logout()">Logout</a>
+    </div>
+    <div id="mainContent" class="main-content">
+      <h2>Welcome, <span id="welcomeName">Patient</span>!</h2>
+      
+      <div id="currentDoctorsInfo" style="display: none; margin: 20px 0; padding: 20px; background: #e8f5e8; border-radius: 8px;">
+      </div>
+
+      <div class="vitals-section">
+        <h3>Real-time Vital Signs</h3>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <h4>❤️ Heart Rate</h4>
+            <canvas id="heartRateChart" height="200"></canvas>
+            <div class="current-value">Current: <span id="currentBPM">--</span> BPM</div>
+          </div>
+          <div class="chart-card">
+            <h4>🩸 SPO2 Level</h4>
+            <canvas id="spo2Chart" height="200"></canvas>
+            <div class="current-value">Current: <span id="currentSPO2">--</span> %</div>
+          </div>
+          <div class="chart-card">
+            <h4>🌡️ Temperature</h4>
+            <canvas id="tempChart" height="200"></canvas>
+            <div class="current-value">Current: <span id="currentTemp">--</span> °C</div>
+          </div>
+          <div class="chart-card">
+            <h4>💨 Respiratory Rate</h4>
+            <canvas id="respiratoryChart" height="200"></canvas>
+            <div class="current-value">Current: <span id="currentResp">--</span> BPM</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="health-dashboard">
+        <div class="status-overview">
+          <h3>Health Status Overview</h3>
+          <div class="status-cards">
+            <div class="status-card" id="overallStatusCard">
+              <h4>🏥 Overall Health</h4>
+              <div class="status-value" id="overallStatus">STABLE</div>
+              <div class="status-time" id="lastUpdateTime">--:--:--</div>
+            </div>
+            <div class="status-card" id="heartStatusCard">
+              <h4>❤️ Heart Status</h4>
+              <div class="status-value" id="heartStatus">NORMAL</div>
+              <div class="status-detail">60-100 BPM</div>
+            </div>
+            <div class="status-card" id="oxygenStatusCard">
+              <h4>🩸 Oxygen Level</h4>
+              <div class="status-value" id="oxygenStatus">NORMAL</div>
+              <div class="status-detail">95-100%</div>
+            </div>
+            <div class="status-card" id="tempStatusCard">
+              <h4>🌡️ Body Temp</h4>
+              <div class="status-value" id="tempStatus">NORMAL</div>
+              <div class="status-detail">36.5-37.5°C</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert-section">
+          <h3>⚠️ Emergency Alerts</h3>
+          <div class="alert-container">
+            <div class="alert-item" id="criticalAlert">
+              <span class="alert-icon">🚨</span>
+              <span class="alert-message">No critical alerts</span>
+              <span class="alert-time">--:--:--</span>
+            </div>
+            <div class="alert-item" id="warningAlert">
+              <span class="alert-icon">⚠️</span>
+              <span class="alert-message">No warnings</span>
+              <span class="alert-time">--:--:--</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions-section">
+          <h3>🚀 Quick Actions</h3>
+          <div class="action-buttons">
+            <button class="action-btn" onclick="triggerEmergencyAlert()">
+              <span class="btn-icon">🆘</span>
+              <span>Emergency Alert</span>
+            </button>
+            <button class="action-btn" onclick="shareHealthReport()">
+              <span class="btn-icon">📤</span>
+              <span>Share Report</span>
+            </button>
+            <button class="action-btn" onclick="downloadHealthData()">
+              <span class="btn-icon">📥</span>
+              <span>Download Data</span>
+            </button>
+            <button class="action-btn" onclick="contactDoctor()">
+              <span class="btn-icon">👨‍⚕️</span>
+              <span>Contact Doctor</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-section">
+          <h3>📊 Health Statistics</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-label">Avg Heart Rate</span>
+              <span class="stat-value" id="avgHeartRate">--</span>
+              <span class="stat-unit">BPM</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Avg SPO2</span>
+              <span class="stat-value" id="avgSPO2">--</span>
+              <span class="stat-unit">%</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Avg Temp</span>
+              <span class="stat-value" id="avgTemp">--</span>
+              <span class="stat-unit">°C</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Monitoring Time</span>
+              <span class="stat-value" id="monitoringTime">0</span>
+              <span class="stat-unit">mins</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="doctorDashboard" style="display:none;">
+    <div id="doctorSidebarToggle" class="sidebar-toggle">☰</div>
+    <div id="doctorSidebar" class="sidebar">
+      <h3>Doctor Profile</h3>
+      <div class="doctor-details">
+        <p><strong>Doctor ID:</strong> <span id="profileDoctorID">-</span></p>
+        <p><strong>Name:</strong> <span id="profileDoctorName">-</span></p>
+        <p><strong>Email:</strong> <span id="profileDoctorEmail">-</span></p>
+        <p><strong>Assigned Patients:</strong> <span id="profilePatientCount">0</span></p>
+      </div>
+      
+      <div style="padding: 15px; margin: 15px 0; background: #2c3e50; border-radius: 5px;">
+        <h4 style="color: white; margin-bottom: 10px;">Your Patients</h4>
+        <div id="patientList" style="max-height: 200px; overflow-y: auto;">
+        </div>
+      </div>
+
+      <a href="#" class="logout-btn" onclick="logout()">Logout</a>
+    </div>
+    <div id="doctorMainContent" class="main-content">
+      <h2>Welcome, Dr. <span id="welcomeDoctorName">Doctor</span>!</h2>
+      
+      <div id="selectedPatientInfo" style="display: none; margin: 20px 0; padding: 20px; background: #e8f5e8; border-radius: 8px;">
+        <h3>Selected Patient Details</h3>
+        <div id="patientDetails">
+        </div>
+      </div>
+
+      <div class="status-overview">
+        <h3>Patient Status Overview</h3>
+        <div class="status-cards">
+          <div class="status-card" id="doctorHeartStatusCard">
+            <div class="status-header">
+              <span class="status-icon">❤️</span>
+              <h4>Heart Rate</h4>
+            </div>
+            <div class="status-value" id="doctorHeartStatus">--</div>
+            <div class="status-bpm" id="doctorCurrentBPMValue">-- BPM</div>
+          </div>
+
+          <div class="status-card" id="doctorOxygenStatusCard">
+            <div class="status-header">
+              <span class="status-icon">🩸</span>
+              <h4>Oxygen</h4>
+            </div>
+            <div class="status-value" id="doctorOxygenStatus">--</div>
+            <div class="status-bpm" id="doctorCurrentSPO2Value">--%</div>
+          </div>
+
+          <div class="status-card" id="doctorTempStatusCard">
+            <div class="status-header">
+              <span class="status-icon">🌡️</span>
+              <h4>Temperature</h4>
+            </div>
+            <div class="status-value" id="doctorTempStatus">--</div>
+            <div class="status-bpm" id="doctorCurrentTempValue">--°C</div>
+          </div>
+
+          <div class="status-card" id="doctorOverallStatusCard">
+            <div class="status-header">
+              <span class="status-icon">📊</span>
+              <h4>Overall</h4>
+            </div>
+            <div class="status-value" id="doctorOverallStatus">--</div>
+            <div class="status-bpm">Status</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vitals-section">
+        <h3>Patient Vital Signs</h3>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <h4>❤️ Heart Rate</h4>
+            <canvas id="doctorHeartRateChart" height="200"></canvas>
+            <div class="current-value">Current: <span id="doctorCurrentBPM">--</span> BPM</div>
+          </div>
+          <div class="chart-card">
+            <h4>🩸 SPO2 Level</h4>
+            <canvas id="doctorSpo2Chart" height="200"></canvas>
+            <div class="current-value">Current: <span id="doctorCurrentSPO2">--</span> %</div>
+          </div>
+          <div class="chart-card">
+            <h4>🌡️ Temperature</h4>
+            <canvas id="doctorTempChart" height="200"></canvas>
+            <div class="current-value">Current: <span id="doctorCurrentTemp">--</span> °C</div>
+          </div>
+          <div class="chart-card">
+            <h4>💨 Respiratory Rate</h4>
+            <canvas id="doctorRespiratoryChart" height="200"></canvas>
+            <div class="current-value">Current: <span id="doctorCurrentResp">--</span> BPM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="animate.js"></script>
+  <script>
+    function showDoctorLogin() {
+      document.getElementById("doctorSection").style.display = "block";
+      document.getElementById("patientSection").style.display = "none";
+      document.getElementById("mainSection").style.display = "none";
+    }
+
+    function showPatientLogin() {
+      document.getElementById("patientSection").style.display = "block";
+      document.getElementById("doctorSection").style.display = "none";
+      document.getElementById("mainSection").style.display = "none";
+      document.getElementById("patientRegistrationSection").style.display = "none";
+    }
+
+    function showPatientRegistration() {
+      document.getElementById("patientRegistrationSection").style.display = "block";
+      document.getElementById("patientSection").style.display = "none";
+      document.getElementById("doctorSection").style.display = "none";
+      document.getElementById("mainSection").style.display = "none";
+    }
+
+    async function patientRegistration(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById("regPatientName").value;
+      const age = parseInt(document.getElementById("regPatientAge").value);
+      const weight = parseFloat(document.getElementById("regPatientWeight").value);
+      const height = parseInt(document.getElementById("regPatientHeight").value);
+      const email = document.getElementById("regPatientEmail").value;
+      const password = document.getElementById("regPatientPassword").value;
+      const confirmPassword = document.getElementById("regPatientConfirmPassword").value;
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      if (age < 1 || age > 150) {
+        alert("Please enter a valid age between 1 and 150");
+        return;
+      }
+
+      if (weight < 1 || weight > 500) {
+        alert("Please enter a valid weight between 1 and 500 kg");
+        return;
+      }
+
+      if (height < 30 || height > 300) {
+        alert("Please enter a valid height between 30 and 300 cm");
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:3000/patient/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            patientID,
+            name,
+            age,
+            weight,
+            height,
+            email,
+            password
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert("Registration successful! Please login with your credentials.");
+          document.getElementById("regPatientID").value = "";
+          document.getElementById("regPatientName").value = "";
+          document.getElementById("regPatientAge").value = "";
+          document.getElementById("regPatientWeight").value = "";
+          document.getElementById("regPatientHeight").value = "";
+          document.getElementById("regPatientEmail").value = "";
+          document.getElementById("regPatientPassword").value = "";
+          document.getElementById("regPatientConfirmPassword").value = "";
+          showPatientLogin();
+        } else {
+          alert(data.message || "Registration failed");
+        }
+      } catch (err) {
+        alert("Error connecting to server");
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
